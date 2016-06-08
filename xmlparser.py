@@ -22,18 +22,15 @@ class Converter:
                     print(datalist)
 
         for child in root:
-
             print("\"" + child.tag+ "\"" + ": {")
 
             for attribute in child.attrib:
                     data = child.get(attribute)
                     print("\t\"-" + attribute+  "\": \"" + data+ "\",")
 
-            if child.text:
-                text = child.text
-                print("\t\"#text\": \"" + text+ "\"\n\t},")
-
-                [self.convert(filename, child) for children in child]
+            if child.text is not None:
+                print("\t\"#text\": \"" + child.text+ "\"\n\t},")
+            [self.convert(filename, child) for children in child]
         print("},")
 
     def arraysplit(data, dimensions):
@@ -48,7 +45,6 @@ class Converter:
             for value in row:
                 print (value, end = ' ')
             print("")
-
 
 
 converter = Converter()
