@@ -17,7 +17,7 @@ class Converter(object):
         datadictionary = {root.tag:
          {child.tag:
                 {grandchild.tag:
-                {attribute: self.getname(attribute, child) for attribute in grandchild.attrib}
+                {attribute: self.getname(attribute, grandchild) for attribute in grandchild.attrib}
             for grandchild in child
 
                 }
@@ -39,8 +39,8 @@ class Converter(object):
                         datadictionary[root.tag][child.tag][grandchild.tag].update({"#text" : grandchild.text})
         return datadictionary
 
-    def getname(self, x,child):
-        return child.get(x)
+    def getname(self, attribute,child):
+        return child.get(attribute)
 
 
     def arraysplit(self, data, dimensions):
