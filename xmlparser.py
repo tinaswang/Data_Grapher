@@ -2,6 +2,7 @@ from lxml import etree
 from pprint import pprint
 import json
 
+
 class Converter(object):
 
     def __init__(self):
@@ -57,12 +58,20 @@ class Converter(object):
 
     def dump_as_json(self, filename):
         datadictionary =  self.convert(filename, self.setup(filename))
-        jsonstrings = json.dumps(datadictionary)
+        jsonstrings = json.JSONEncoder().encode(datadictionary)
         return jsonstrings
+
+    def dump_as_json_file(self, writefile):
+        datadictionary =  self.convert(filename, self.setup(filename))
+        jsonstrings = json.dumps(datadictionary)
+        with open(writefile, 'w') as f:
+            json.dump(datadictionary, f)
+
 
 
 
 
 converter = Converter()
-datadictionary=converter.dump_as_dictionary("dataexample.xml")
+datadictionary=converter.dump_as_json("dataexample.xml")
 print(datadictionary)
+datadictionary=converter.dump_as_dictionary("dataexample.xml")
