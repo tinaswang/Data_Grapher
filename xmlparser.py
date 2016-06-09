@@ -1,36 +1,46 @@
 from lxml import etree
-from bs4 import BeautifulSoup
+from pprint import pprint
+import json
 
-class Converter:
+class Converter(object):
+
+    def __init__(self):
+        self.newdata = None
 
     def setup(self, filename):
         parser = etree.XMLParser(remove_comments=True)
         xmldoc = etree.parse(filename, parser = parser)
         root = xmldoc.getroot()
-        print("{\n" +  "\"" + root.tag + "\"" + ": {")
-        return xmldoc
+        return root
 
     def convert(self, filename, root):
+        datadictionary = {root.tag:
+         {child.tag:
+                {grandchild.tag:
+                {attribute: self.getname(attribute, child) for attribute in grandchild.attrib}
+            for grandchild in child
+
+                }
+             for child in root
+            }
+        }
         for child in root:
-            print("\"" + child.tag+ "\"" + ": {")
-            for attribute in child.attrib:
-                    data = child.get(attribute)
-                    print("\t\"-" + attribute+  "\": \"" + data+ "\",")
-            if child.text:
-                if child.tag =="Detector" and any("type" in s for s in child.attrib):
-                        dimensions = child.attrib["type"].replace("[", " ").replace(",", " ").replace("]", " ").split()
+            for grandchild in child:
+                if grandchild.text:
+                    if grandchild.tag =="Detector" and any("type" in s for s in grandchild.attrib):
+                        dimensions = grandchild.attrib["type"].replace("[", " ").replace(",", " ").replace("]", " ").split()
                         if len(dimensions) == 3 and dimensions[0] == "INT32":
                             dimensions.remove("INT32")
                             dimensions =[int(i) for i in dimensions]
-                            data = self.arraysplit(child.text.split(), dimensions)
-                            self.prettyprint(data)
-                else:
-                    print("\t\"#text\": \"" + child.text+ "\"\n\t},")
-            [self.convert(filename, child) for children in child]
-        if not list(child):
-            print("}")
-        else:
-            print("}")
+                            cleaned_array = self.arraysplit(grandchild.text.split(), dimensions)
+                            datadictionary[root.tag][child.tag][grandchild.tag].update({"data" : cleaned_array})
+
+                    else:
+                        datadictionary[root.tag][child.tag][grandchild.tag].update({"#text" : grandchild.text})
+        return datadictionary
+
+    def getname(self, x,child):
+        return child.get(x)
 
 
     def arraysplit(self, data, dimensions):
@@ -40,13 +50,19 @@ class Converter:
         datalist = [data[x:x+cols] for x in range(0, len(data), cols)]
         return datalist
 
-    def prettyprint(self, data):
-        print("\t\"-data\": \"")
-        for row in data:
-            for value in row:
-                print (value, end = ' ')
-            print(" ")
-        print("\"\n}")
+
+    def dump_as_dictionary(self, filename):
+        datadictionary =  self.convert(filename, self.setup(filename))
+        return datadictionary
+
+    def dump_as_json(self, filename):
+        datadictionary =  self.convert(filename, self.setup(filename))
+        jsonstrings = json.dumps(datadictionary)
+        return jsonstrings
+
+
+
 
 converter = Converter()
-converter.convert("dataexample.xml",converter.setup("dataexample.xml").getroot())
+datadictionary=converter.dump_as_dictionary("dataexample.xml")
+print(datadictionary)

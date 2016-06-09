@@ -1,5 +1,5 @@
 from lxml import etree
-import numpy as np
+from pprint import pprint
 
 class Practice:
 
