@@ -28,7 +28,7 @@ class Converter(object):
         for child in root:
             for grandchild in child:
                 if grandchild.text:
-                    if grandchild.tag =="Detector" and any("type" in s for s in grandchild.attrib):
+                    if "Detector" in grandchild.tag and any("type" in s for s in grandchild.attrib):
                         dimensions = grandchild.attrib["type"].replace("[", " ").replace(",", " ").replace("]", " ").split()
                         if len(dimensions) == 3 and dimensions[0] == "INT32":
                             dimensions.remove("INT32")
@@ -61,7 +61,7 @@ class Converter(object):
         jsonstrings = json.JSONEncoder().encode(datadictionary)
         return jsonstrings
 
-    def dump_as_json_file(self, writefile):
+    def dump_as_json_file(self, filename, writefile):
         datadictionary =  self.convert(filename, self.setup(filename))
         jsonstrings = json.dumps(datadictionary)
         with open(writefile, 'w') as f:
@@ -72,6 +72,6 @@ class Converter(object):
 
 
 converter = Converter()
-datadictionary=converter.dump_as_json("dataexample.xml")
+datadictionary=converter.dump_as_json("Data Examples/CG2_1.xml")
 print(datadictionary)
-datadictionary=converter.dump_as_dictionary("dataexample.xml")
+#datadictionary=converter.dump_as_json_file("dataexample.xml", "dataexample.json")
