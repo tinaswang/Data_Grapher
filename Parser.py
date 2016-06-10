@@ -108,8 +108,6 @@ def main():
 
     com = ndimage.center_of_mass(data_array)
     com = [x for x in com]
-    #graph_data = Data([Contour(data_array)])
-    #py.iplot(graph_data)
     graph_data = [
     go.Contour(z = data_array)]
     layout = go.Layout(
@@ -127,7 +125,7 @@ def main():
                 size=10,
                 color='#ffffff'
             ),
-            align='Center of Mass',
+            align='center',
             arrowhead=2,
             arrowsize=1,
             arrowwidth=2,
