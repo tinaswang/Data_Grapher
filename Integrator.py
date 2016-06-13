@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 from scipy import stats
 from Display import PlotlyDisplay
 
+
 class Integrator(object):
 
     def __init__(self, data_file, background_file):
@@ -16,10 +17,8 @@ class Integrator(object):
         self.subtract(background_file)
 
     def get_center_of_mass(self, data):
-        hist, bins = np.histogram(self.data.ravel(), normed=True, bins=60000)
-        threshold = bins[np.cumsum(bins) * (bins[1] - bins[0]) > 30000][0]
-        mnorm2d = np.ma.masked_less(self.data, threshold)
-        com = ndimage.measurements.center_of_mass(mnorm2d)
+        plotly = PlotlyDisplay(self.filename)
+        com = plotly.get_center_of_mass(plotly.get_data(self.filename))
         return com
 
     def subtract(self, background_file):
@@ -53,8 +52,17 @@ class Integrator(object):
         u = np.stack((np.zeros(dim_x*dim_y), np.zeros(dim_x*dim_y), z), axis=-1)
         theta = np.arccos(np.sum (u*v, axis=1) / (np.linalg.norm(u,axis=1) * np.linalg.norm(v , axis=1)))
 
+        n_bins = 100
+        bin_means, bin_edges, binnumber = stats.binned_statistic(theta, values.flatten(), statistic='mean', bins=n_bins)
+        bin_width = (bin_edges[1] - bin_edges[0])
+        bin_centers = bin_edges[1:] - bin_width/2
+        plt.figure()
+        plt.plot(bin_centers , bin_means)
+        plt.show()
+
 def main():
-    integrator = Integrator("Data Examples/HiResSANS_exp9_scan0038_0001.xml", "HiResSANS_exp9_scan0038_0001.xml")
+    integrator = Integrator("Data Examples/HiResSANS_exp9_scan0030_0001.xml"
+                            , "Data Examples/HiResSANS_exp9_scan0038_0001.xml")
     integrator.integrate()
 
 if __name__ == "__main__":

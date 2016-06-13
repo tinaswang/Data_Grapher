@@ -114,9 +114,9 @@ class MatPlotLibDisplay (Display):
 
 def main():
     #pl = MatPlotLibDisplay("Data Examples/BioSANS_exp253_scan0010_0001.xml")
-    pl2 = PlotlyDisplay("Data Examples/BioSANS_exp253_scan0010_0001.xml")
+    pl2 = PlotlyDisplay("Data Examples/HiResSANS_exp9_scan0030_0001.xml")
     #pl.plot2d()
-    pl2.plot2d()
+    print(pl2.get_center_of_mass(pl2.get_data("Data Examples/HiResSANS_exp9_scan0030_0001.xml")))
 
 
 if __name__ == "__main__":
