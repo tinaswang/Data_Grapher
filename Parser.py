@@ -108,39 +108,6 @@ def main():
 
     com = ndimage.center_of_mass(data_array)
     com = [x for x in com]
-    graph_data = [
-    go.Contour(z = data_array)]
-    layout = go.Layout(
-    showlegend=False,
-    annotations=[
-        dict(
-            x= com[0],
-            y= com[1],
-            xref='x',
-            yref='y',
-            text='Center',
-            showarrow=True,
-            font=dict(
-                family='Courier New, monospace',
-                size=10,
-                color='#ffffff'
-            ),
-            align='center',
-            arrowhead=2,
-            arrowsize=1,
-            arrowwidth=2,
-            arrowcolor='#636363',
-            ax=20,
-            ay=-30,
-            bordercolor='#c7c7c7',
-            borderwidth=2,
-            borderpad=4,
-            bgcolor='#ff7f0e',
-            opacity=0.8
-        )
-    ]
-)
-    fig = go.Figure(data=graph_data, layout=layout)
-    plot_url = py.plot(fig, filename='text-chart-styling.html')
+    
 if __name__ == "__main__":
     main()
