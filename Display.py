@@ -24,8 +24,10 @@ class Display(object):
     @classmethod
     @abc.abstractmethod
     def get_center_of_mass(self, data):
-        com = ndimage.center_of_mass(data)
-        com = [x for x in com]
+        hist, bins = np.histogram(data.ravel(), normed=False, bins=60000)
+        threshold = bins[np.cumsum(bins) * (bins[1] - bins[0]) > 30000][0]
+        mnorm2d = np.ma.masked_less(data, threshold)
+        com = ndimage.measurements.center_of_mass(mnorm2d)
         return com
 
     @abc.abstractmethod
@@ -41,7 +43,7 @@ class PlotlyDisplay (Display):
         self.center_of_mass = self.get_center_of_mass(self.get_data(filename))
 
     def get_data(self, filename):
-        return super().get_data(self.filename)
+        return super().get_data(filename)
 
     def get_center_of_mass(self, data):
         return super().get_center_of_mass(data);
@@ -66,7 +68,7 @@ class PlotlyDisplay (Display):
                     align = 'center',
                     arrowhead=2,
                     arrowsize=1,
-                    arrowwidth=3,
+                    arrowwidth=2,
                     arrowcolor='#ff7f0e',
                     ax=20,
                     ay=-30,
@@ -99,7 +101,7 @@ class MatPlotLibDisplay (Display):
     def plot2d(self):
         #fig = fig = plt.figure(figsize=(6, 6))
         #ax = fig.add_subplot(111)
-        plt.imshow(self.data)
+        plt.imshow(self.data, origin = "lower")
         plt.scatter(self.center_of_mass[1], self.center_of_mass[0], c= 'g', s= 100)
         #ax.annotate('', xy=(self.center_of_mass[1], self.center_of_mass[0]), xytext=(3, 1.5),
             #arrowprops=dict(facecolor='black', shrink= 1),
@@ -111,9 +113,11 @@ class MatPlotLibDisplay (Display):
         pass
 
 def main():
-    #pl = MatPlotLibDisplay("Data Examples/CG2.xml")
-    pl2 = PlotlyDisplay("Data Examples/CG2.xml")
+    #pl = MatPlotLibDisplay("Data Examples/BioSANS_exp253_scan0010_0001.xml")
+    pl2 = PlotlyDisplay("Data Examples/BioSANS_exp253_scan0010_0001.xml")
     #pl.plot2d()
     pl2.plot2d()
+
+
 if __name__ == "__main__":
     main()

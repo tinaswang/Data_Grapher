@@ -108,6 +108,6 @@ def main():
 
     com = ndimage.center_of_mass(data_array)
     com = [x for x in com]
-    
+
 if __name__ == "__main__":
     main()
