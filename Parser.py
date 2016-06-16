@@ -22,7 +22,7 @@ class Parser(object):
         root = xmldoc.getroot()
         return root
 
-    def __convert(self, filename, root):
+    def __convert(self, filename, root): # converts XML to Python dictionary format
         datadictionary = {root.tag:
          {child.tag:
                 {grandchild.tag:
@@ -66,21 +66,21 @@ class Parser(object):
         return datalist
 
 
-    def dump_as_dict(self):
+    def dump_as_dict(self): # returns data in Python dictionary form
         return self.parse()
 
-    def dump_as_json(self):
+    def dump_as_json(self): # dump data as a JSON string
         data =  self.parse()
         json_str= json.JSONEncoder().encode(data)
         return json_str
 
-    def dump_to_file(self, output_file):
+    def dump_to_file(self, output_file): # dump JSON to a file
         data=  self.parse()
         with open(output_file, 'w') as f:
             json.dump(data, f)
         print("Dumped to %s" %(output_file))
 
-    def xpath_get(self, path):
+    def xpath_get(self, path):   # search the resulting Python dictionary
 
     #@path is the form of "/tag/tag/tag"
         elem = self.dump_as_dict()
