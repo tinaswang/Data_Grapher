@@ -1,51 +1,51 @@
 from Parser import Parser
-import numpy as np
-from Display import Display
 from Operations import Operations
+from Display import Display
 
 class Data(object):
 
     def __init__(self, data_file, center_file, background_file):
         self.data_f = data_file
-        if center_file not None:
+        if center_file is not "none":
             self.center_f = center_file
-        if background_file not None:
+        if background_file is not "none":
             self.backgrd_f = background_file
-        # self.config = config
+        #self.config = config
 
-    def get_data(self, p):
-        get_data.detector_data = np.array(p.xpath_get("/SPICErack/Data/Detector/data"))
-        get_data.distance_1 = p.xpath_get("/SPICErack/Motor_Positions/sample_det_dist/#text")
-        get_data.distance_2 = p.xpath_get("/SPICErack/Header/sample_to_flange/#text")
-        get_data.pixel_size_x = p.xpath_get("/SPICErack/Header/x_mm_per_pixel/#text")
-        get_data.pixel_size_y = p.xpath_get("/SPICErack/Header/y_mm_per_pixel/#text")
-        get_data.translation = p.xpath_get("/SPICErack/Motor_Positions/detector_trans/#text")
-        get_data.dim_x = p.xpath_get("/SPICErack/Header/Number_of_X_Pixels/#text")
-        get_data.dim_y = p.xpath_get("/SPICErack/Header/Number_of_Y_Pixels/#text")
-
-    def setup(self):
+    def setup(self): # sets up the data for the three files
         op = Operations()
         p_data = Parser(self.data_f)
-        data = p_data.parse()
-        self.translated_data = op.translate(data, p_data)
+        self.data = Operations.get_data(p_data)[0]
         if self.center_f:
             p_center = Parser(self.center_f)
-            center_data = Data(p_center)
-            self.translated_center = op.translate(center_data,detector_data, p_center)
+            self.center_data = Operations.get_data(p_center)[0]
+            self.center_of_mass = Operations.get_center_of_mass(self.center_data)
         if self.backgrd_f:
-            p_backgrd = Parser(self.background_f)
-            backgdr_data = Data(p_backgrd)
-            self.translated_backgrd = op.translate(backgrd_data, p_backgrd)
-            self.subtracted_data = op.subtract(self.data_f, self.backgrd_f)
+            p_backgrd = Parser(self.backgrd_f)
+            self.backgrd_data = Operations.get_data(p_backgrd)[0]
+            self.subtracted_data = op.subtract(self.data, self.backgrd_data)
 
-    def display1D(self):
-        Operations.integrate(self.subtracted_data)
+    def display1d(self): # Graphs a plotly line graph
+        if (self.subtracted_data.any()):
+            p = Parser(self.data_f)
+            Display.plot1d(parser= p,
+                                difference= self.subtracted_data,
+                                 com =  self.center_of_mass)
+        else:
+             raise NameError("Data not found.")
 
-    def display2d(self):
-        Display.plot2d(self.center_data,Operations.center_of_mass(center_data))
 
+    def display2d(self): # Graphs a plotly contour plot
+        if (self.center_data.any()):
+            Display.plot2d(self.center_data, self.center_f, self.center_of_mass)
+        else:
+             raise NameError("Data not found.")
 
 def main():
-    pass
+    d = Data(data_file="Data Examples/BioSANS_exp253_scan0015_0001.xml",
+            center_file = "Data Examples/BioSANS_exp253_scan0010_0001.xml",
+            background_file="Data Examples/BioSANS_exp253_scan0011_0001.xml")
+    d.setup()
+    d.display1d()
 if __name__ == "__main__":
     main()
