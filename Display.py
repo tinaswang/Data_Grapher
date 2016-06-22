@@ -14,9 +14,9 @@ class Display(object):
     def plot2d(data, filename, center): # makes a 2d plotly graph of the center data
 
         p = Parser(filename)
-        detector_data, distance_1, distance_2,pixel_size_y,pixel_size_x, translation, dim_x, dim_y = Operations.get_data(p)
+        detector_data, distance_1, distance_2, pixel_size_y,pixel_size_x, translation, dim_x, dim_y = Operations.get_data(p)
         x_units_centered,y_units_centered = Operations.get_axes_units(detector_data.shape,
-                                            pixel_size=[pixel_size_y,pixel_size_x])
+                                                pixel_size=[pixel_size_y,pixel_size_x])
 
         X = x_units_centered
         Y = y_units_centered + translation
@@ -29,8 +29,8 @@ class Display(object):
          showlegend= False,
          annotations=[
                  dict(
-                     x = center[0]/pixel_size_x - detector_data.shape[1]/2,
-                     y = (center[1])/pixel_size_y,
+                     x = center[0] - detector_data.shape[1]/2,
+                     y = (center[1]),
                      xref='x',
                      yref='y',
                      text= "Center",
@@ -58,18 +58,25 @@ class Display(object):
 
 
         fig = go.Figure(data=graph_data, layout=layout)
-        py.plot(fig)
+        #py.plot(fig)
+        plt.imshow(data)
+        plt.scatter(center[0]/pixel_size_y, center[1]/pixel_size_x,color = "white", s = 50)
+        plt.show()
+
 
     @staticmethod
     def plot1d(parser, com, difference): # Makes the plotly line graph
 
-        bin_centers, bin_means = Operations.integrate(parser, com, difference)
-        bin_centers = bin_centers
-        bin_means = bin_means
+        profile = Operations.integrate(parser=parser,
+                                            center=com,
+                                            data=difference)
+        pixel_size_x = Operations.get_data(parser) [3]
+        pixel_size_y = Operations.get_data(parser) [4]
 
+        length = np.linspace(0, (pixel_size_x*profile.shape[0])/10.0**4.0, profile.shape[0])
         trace = go.Scatter(
-            x = bin_centers,
-            y = bin_means,
+            x = length,
+            y = profile,
             mode = 'lines'
             )
 

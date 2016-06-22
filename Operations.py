@@ -33,25 +33,9 @@ class Operations(object):
         initial_guess = (300,com[1],com[0],4,4,0,0)
         popt, pcov = opt.curve_fit(Operations.twoD_Gaussian, (x, y), data.ravel(), p0 = initial_guess)
 
-        center_x = (popt[1] * pixel_size_x)
-        center_y = popt[2] * pixel_size_y
+        center_x = (popt[1]) * pixel_size_y
+        center_y = popt[2] * pixel_size_x
         return center_x, center_y
-
-    @staticmethod
-    def recenter(subtracted_data, p, center):
-        detector_data = Operations.get_data(p)[0]
-        pixel_size_x = Operations.get_data(p) [3]
-        pixel_size_y = Operations.get_data(p) [4]
-        dim_y = detector_data.shape[0]
-        dim_x = detector_data.shape[1]
-        center_x = center[0]
-        center_y = center[1]
-
-        x_coords = np.linspace(-center_x, (dim_x * pixel_size_x)- center_x -1, dim_x)
-        y_coords = np.linspace(-center_y, (dim_y * pixel_size_y) - center_y -1, dim_y)
-        xx_coords, yy_coords = np.meshgrid(x_coords, y_coords)
-
-        return xx_coords, yy_coords
 
     @staticmethod
     def get_data(p):
@@ -65,43 +49,20 @@ class Operations(object):
         return detector_data, distance_1, distance_2,pixel_size_x,pixel_size_y, translation, dim_x, dim_y
 
     @staticmethod
-    def integrate(parser, center,difference): # Does radial Integration
-        xx_coords, yy_coords = Operations.recenter(subtracted_data = difference,
-                                                    p = parser,
-                                                    center = center)
+    def integrate(parser, center, data):
+        y, x = np.indices((data.shape))
+        pixel_size_x = Operations.get_data(parser) [3]
+        pixel_size_y = Operations.get_data(parser) [4]
 
-        distance_1 = Operations.get_data(parser)[1]
-        distance_2 = Operations.get_data(parser)[2]
-        pixel_size_x = Operations.get_data(parser)[3]
-        pixel_size_y = Operations.get_data(parser)[4]
-        dim_x = difference.shape[1]
-        dim_y = difference.shape[0]
+        y = pixel_size_y *y
+        x = pixel_size_x*x
+        r = np.sqrt((x - center[0])**2 + (y - center[1])**2)
+        r = r.astype(np.int)
 
-        Z = distance_1 + distance_2
-        z = np.full((dim_x*dim_y), Z)
-
-        v = np.stack((xx_coords.flatten(),yy_coords.flatten(), z), axis=-1)
-        u = np.stack((np.zeros(dim_x*dim_y),np.zeros(dim_x*dim_y), z), axis=-1)
-        theta = np.arccos(np.sum(u*v, axis=1)/(np.linalg.norm(u,axis=1) * np.linalg.norm(v,axis=1)))
-
-        # Raw data:
-        # plt.figure()
-        # plt.plot(theta,difference.flatten(),'.')
-
-        # Integration
-        n_bins = 100
-        bin_means, bin_edges, binnumber = stats.binned_statistic(theta,
-                                                                difference.flatten(),
-                                                                statistic='mean',
-                                                                bins=n_bins)
-        bin_width = (bin_edges[1] - bin_edges[0])
-        bin_centers = bin_edges[1:] - bin_width/2
-        # plt.figure()
-        # plt.plot(bin_centers,bin_means)
-        #
-        # plt.show()
-
-        return bin_centers, bin_means
+        tbin = np.bincount(r.ravel(), data.ravel())
+        nr = np.bincount(r.ravel())
+        radialprofile = tbin / nr
+        return radialprofile
 
     @staticmethod
     def get_axes_units(data_shape, pixel_size):
