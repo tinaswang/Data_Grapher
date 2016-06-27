@@ -6,7 +6,8 @@
 
 ```python
 
-d = Data("example.xml")
-d.plot()
+d = Data("dataexample.xml", "centerexample.xml", "backgroundexample.xml)
+d.setup()
+d.display
 
 ```
