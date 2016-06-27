@@ -92,22 +92,7 @@ class Parser(object):
 
 
 def main():
-    p = Parser("Data Examples/psBioSANS.xml")
-    #print(p.dump_as_json())
-    #print(p.dump_as_dict()["SPICErack"]["Counters"]["time"]["#text"])
-    #print(p.xpath_get("/SPICErack/Counters/"))
-    data = p.xpath_get("/SPICErack/Data/Detector/data")
-    #print(data)
-
-    import numpy as np
-    from scipy import ndimage
-    import matplotlib.pyplot as plt
-    import plotly.offline as py
-
-    data_array = np.array(data)
-
-    com = ndimage.center_of_mass(data_array)
-    com = [x for x in com]
+    pass
 
 if __name__ == "__main__":
     main()

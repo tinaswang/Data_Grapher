@@ -4,6 +4,7 @@ import numpy as np
 import scipy.optimize as opt
 import matplotlib.pyplot as plt
 import scipy.stats as stats
+
 class Operations(object):
 
     def __init__(self):
