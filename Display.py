@@ -1,8 +1,6 @@
-from Parser import Parser
 import numpy as np
 import plotly.offline as py
 import plotly.graph_objs as go
-from Operations import Operations
 import matplotlib.pyplot as plt
 
 class Display(object):
@@ -11,13 +9,11 @@ class Display(object):
         pass
 
     @staticmethod
-    def plot2d(data, filename, center): # makes a 2d plotly graph of the center data
-
-        p = Parser(filename)
-        detector_data, distance_1, distance_2, pixel_size_y,pixel_size_x, translation, dim_x, dim_y = Operations.get_data(p)
-        x_units_centered,y_units_centered = Operations.get_axes_units(detector_data.shape,
-                                                pixel_size=[pixel_size_y,pixel_size_x])
-
+    def plot2d(parameters, data, center, units):
+        # makes a 2d plotly graph of the data
+        # Will not graph the correct center if data is rotated 90 degrees
+        detector_data, distance_1, distance_2, pixel_size_x,pixel_size_y, translation, dim_x, dim_y = parameters
+        x_units_centered, y_units_centered = units
         X = x_units_centered
         Y = y_units_centered + translation
         Z = data
@@ -29,8 +25,8 @@ class Display(object):
          showlegend= False,
          annotations=[
                  dict(
-                     x = center[0] - detector_data.shape[1]/2,
-                     y = (center[1]),
+                     x = center[0]/pixel_size_x - detector_data.shape[1]/2,
+                     y = (center[1])/pixel_size_y,
                      xref='x',
                      yref='y',
                      text= "Center",
@@ -58,21 +54,17 @@ class Display(object):
 
 
         fig = go.Figure(data=graph_data, layout=layout)
-        #py.plot(fig)
-        plt.imshow(data)
-        plt.scatter(center[0]/pixel_size_y, center[1]/pixel_size_x,color = "white", s = 50)
-        plt.show()
+        py.plot(fig)
+        # Below: matplotlib version
+        # plt.imshow(Z)
+        # plt.scatter(center[0]/pixel_size_y, center[1]/pixel_size_x,color = "white", s = 50)
+        # plt.show()
 
 
     @staticmethod
-    def plot1d(parser, com, difference): # Makes the plotly line graph
-
-        profile = Operations.integrate(parser=parser,
-                                            center=com,
-                                            data=difference)
-        pixel_size_x = Operations.get_data(parser) [3]
-        pixel_size_y = Operations.get_data(parser) [4]
-
+    def plot1d(com, difference, profile, pixel_size):
+        # Makes the plotly line graph of the radial integration
+        pixel_size_x, pixel_size_y = pixel_size
         length = np.linspace(0, (pixel_size_x*profile.shape[0])/10.0**4.0, profile.shape[0])
         trace = go.Scatter(
             x = length,

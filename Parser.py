@@ -12,11 +12,11 @@ class Parser(object):
         else:
              raise FileNotFoundError(filename)
 
-    def parse(self):
+    def parse(self): # returns parsed data
         data = self.__convert(self.filename, self.__setup(self.filename))
         return data
 
-    def __setup(self, filename):
+    def __setup(self, filename): # sets up XML to be usable by etree
         parser = etree.XMLParser(remove_comments=True)
         xmldoc = etree.parse(filename, parser = parser)
         root = xmldoc.getroot()
@@ -51,14 +51,14 @@ class Parser(object):
                             datadictionary[root.tag][child.tag][grandchild.tag].update({"#text" : grandchild.text})
         return datadictionary
 
-    def __getname(self, attribute,child):
+    def __getname(self, attribute,child): # gets name of attributes
         try:
             return float(child.get(attribute))
         except:
             return child.get(attribute)
 
 
-    def __arraysplit(self, data, dimensions):
+    def __arraysplit(self, data, dimensions): # splits large arrays of data
         data = [int(i) for i in data]
         rows = dimensions[0]
         cols = dimensions[1]

@@ -1,4 +1,3 @@
-from Parser import Parser
 import numpy as np
 import scipy.ndimage as ndimage
 import numpy as np
@@ -12,6 +11,7 @@ class Operations(object):
 
     @staticmethod
     def get_com(center_data):
+        # gets a guess for the center of mass
         hist, bins = np.histogram(center_data.ravel(), normed=False, bins=49000)
         threshold = bins[np.cumsum(bins) * (bins[1] - bins[0]) > 30000][0]
         mnorm2d = np.ma.masked_less(center_data, threshold)
@@ -20,10 +20,9 @@ class Operations(object):
         return com
 
     @staticmethod
-    def find_center(center_data, p):
-        pixel_size_x = Operations.get_data(p) [4]
-        pixel_size_y = Operations.get_data(p) [3]
-        translation = Operations.get_data(p) [5]
+    def find_center(center_data, size, translation):
+        # finds the actual center of mass via Gaussian fitting
+        pixel_size_x, pixel_size_y = size
         x = np.linspace(0, 255, 256)
         y = np.linspace(0, 255, 256)
         x, y = np.meshgrid(x, y)
@@ -33,27 +32,14 @@ class Operations(object):
         initial_guess = (300,com[1],com[0],4,4,0,0)
         popt, pcov = opt.curve_fit(Operations.twoD_Gaussian, (x, y), data.ravel(), p0 = initial_guess)
 
-        center_x = (popt[1]) * pixel_size_y
-        center_y = popt[2] * pixel_size_x
+        center_x = (popt[1]) * pixel_size_x
+        center_y = popt[2] * pixel_size_y
         return center_x, center_y
 
     @staticmethod
-    def get_data(p):
-        detector_data = np.array(p.xpath_get("/SPICErack/Data/Detector/data"))
-        distance_1 = p.xpath_get("/SPICErack/Motor_Positions/sample_det_dist/#text")
-        distance_2 = p.xpath_get("/SPICErack/Header/sample_to_flange/#text")
-        pixel_size_x = p.xpath_get("/SPICErack/Header/x_mm_per_pixel/#text")
-        pixel_size_y = p.xpath_get("/SPICErack/Header/y_mm_per_pixel/#text")
-        translation = p.xpath_get("/SPICErack/Motor_Positions/detector_trans/#text")
-        dim_x, dim_y = detector_data.shape
-        return detector_data, distance_1, distance_2,pixel_size_x,pixel_size_y, translation, dim_x, dim_y
-
-    @staticmethod
-    def integrate(parser, center, data):
+    def integrate(size, center, data): # Does the radial integration
         y, x = np.indices((data.shape))
-        pixel_size_x = Operations.get_data(parser) [3]
-        pixel_size_y = Operations.get_data(parser) [4]
-
+        pixel_size_x, pixel_size_y = size
         y = pixel_size_y *y
         x = pixel_size_x*x
         r = np.sqrt((x - center[0])**2 + (y - center[1])**2)
@@ -66,6 +52,7 @@ class Operations(object):
 
     @staticmethod
     def get_axes_units(data_shape, pixel_size):
+        # Recenters 2d graph
         """
         pixel_size in mm
         get default units with center as center of the images
@@ -78,6 +65,7 @@ class Operations(object):
 
     @staticmethod
     def twoD_Gaussian(xdata_tuple, amplitude, xo, yo, sigma_x, sigma_y, theta, offset):
+        # model for the 2d Gaussian
         (x,y) = xdata_tuple
         a = (np.cos(theta)**2)/(2*sigma_x**2) + (np.sin(theta)**2)/(2*sigma_y**2)
         b = -(np.sin(2*theta))/(4*sigma_x**2) + (np.sin(2*theta))/(4*sigma_y**2)
