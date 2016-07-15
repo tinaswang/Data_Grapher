@@ -11,7 +11,7 @@ class Display(object):
     @staticmethod
     def plot2d(parameters, data, center, units):
         # makes a 2d plotly graph of the data
-        # Will not graph the correct center if data is rotated 90 degrees
+        # Will not graph the correct center if data is rotated 90 degrees because of repositioned axes
         detector_data, distance_1, distance_2, pixel_size_x,pixel_size_y, translation, dim_x, dim_y = parameters
         x_units_centered, y_units_centered = units
         X = x_units_centered

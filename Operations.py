@@ -12,6 +12,7 @@ class Operations(object):
 
     @staticmethod
     def get_com(center_data):
+        # derived from http://stackoverflow.com/questions/18435003/ndimages-center-of-mass-to-calculate-the-position-of-a-gaussian-peak
         # gets a guess for the center of mass
         hist, bins = np.histogram(center_data.ravel(), normed=False, bins=49000)
         threshold = bins[np.cumsum(bins) * (bins[1] - bins[0]) > 30000][0]
@@ -23,6 +24,7 @@ class Operations(object):
     @staticmethod
     def find_center(center_data, size, translation):
         # finds the actual center of mass via Gaussian fitting
+        # derived from http://stackoverflow.com/questions/21242011/most-efficient-way-to-calculate-radial-profile
         pixel_size_x, pixel_size_y = size
         x = np.linspace(0, 255, 256)
         y = np.linspace(0, 255, 256)
@@ -33,8 +35,9 @@ class Operations(object):
         initial_guess = (300,com[1],com[0],4,4,0,0)
         popt, pcov = opt.curve_fit(Operations.twoD_Gaussian, (x, y), data.ravel(), p0 = initial_guess)
 
-        center_x = (popt[1]) * pixel_size_x
-        center_y = popt[2] * pixel_size_y
+        center_x = (popt[1])*pixel_size_x
+        center_y = popt[2]*pixel_size_y
+
         return center_x, center_y
 
     @staticmethod
@@ -67,6 +70,7 @@ class Operations(object):
     @staticmethod
     def twoD_Gaussian(xdata_tuple, amplitude, xo, yo, sigma_x, sigma_y, theta, offset):
         # model for the 2d Gaussian
+        # from http://stackoverflow.com/questions/21566379/fitting-a-2d-gaussian-function-using-scipy-optimize-curve-fit-valueerror-and-m
         (x,y) = xdata_tuple
         a = (np.cos(theta)**2)/(2*sigma_x**2) + (np.sin(theta)**2)/(2*sigma_y**2)
         b = -(np.sin(2*theta))/(4*sigma_x**2) + (np.sin(2*theta))/(4*sigma_y**2)
@@ -77,6 +81,7 @@ class Operations(object):
 
     @staticmethod
     def pad_to_square(a, pad_value=0):
+        # from http://stackoverflow.com/questions/10871220/making-a-matrix-square-and-padding-it-with-desired-value-in-numpy
         m = a.reshape((a.shape[0], -1))
         padded = pad_value * np.ones(2 * [max(m.shape)], dtype=m.dtype)
         padded[0:m.shape[0], 0:m.shape[1]] = m
